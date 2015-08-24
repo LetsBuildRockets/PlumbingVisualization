@@ -8,21 +8,16 @@ pin latchPin = 9;
 pin valvePins[5] = {0}; //TODO: actually fill
 const int interruptNumber = 0;  // == dp 2
 
+bool oldValveStatuses[5] = {0};
 volatile bool valveStatuses[5] = {0};
 byte lightStatuses[7] = {0};
-int[] lines[] {
-  int white1[2] = {0};
-}
 
 int test_lightnumber = 0;
 
-void setup(){
-  attachInterrupt(interruptNumber, updateValveStatuses, FALLING);
-  pinMode(latchPin, OUTPUT);
-  pinMode(clockPin, OUTPUT);
-  pinMode(dataPin, OUTPUT);
-  Serial.begin(9600);
-}
+const int whiteStart = 0;
+const int yellowStart = 11;
+const int redStart = 20;
+const int greenStart = 25;
 
 void updateValveStatuses(){
   for(int eger = 0; eger < 5; eger++){
@@ -46,27 +41,149 @@ void removeLight(int light){
   lightStatuses[light/8] = ~(1 << (light % 8)) & lightStatuses[light/8];
 }
 
+void changeLight(int light, void (*action)(int), int delayTime = 100){
+  action(light);
+  lightLights();
+  delay(delayTime);
+}
+
 void changeLine(int startLight, int endLight, void (*action)(int), int delayTime = 100){
-  for(int counter = startLight; counter < (endLight + 1); counter = (counter + 1) % (endLight + 2)){
+  if(startLight < endLight) endLight++;
+  else if(startLight > endLight) endLight--;
+  for(int counter = startLight; counter - endLight != 0;){
     action(counter);
     lightLights();
-    Serial.println(counter);
-    delay(delayTime);
+    delay(delayTime);    
+    if(startLight < endLight) counter++;
+    else counter--;
+  }
+}
+int getLightAction(int valveNumber){
+  if(oldValveStatuses[valveNumber] == valveStatuses[valveNumber]) return 0;
+  else if(valveStatuses[valveNumber] == true) return 1; //turned on
+  else return -1; //turned off
+}
+void play(){
+  // valve 0
+  if(getLightAction(0) == 1) {
+    changeLight(redStart, addLight);
+    changeLine(whiteStart + 2, whiteStart + 10, addLight);
+    delay(200);
+    changeLine(yellowStart, yellowStart + 5, addLight);
+    changeLine(greenStart + 15, greenStart + 3, addLight);
+  } else if(getLightAction(0) == -1) {
+    changeLight(redStart, removeLight);
+  }
+
+  // valve 3
+  if(getLightAction(3) == 1) {
+    changeLight(redStart + 3, addLight);
+    changeLine(yellowStart + 6, yellowStart + 8, addLight);
+  } else if (getLightAction(3) == -1) {
+    changeLight(redStart + 3, removeLight);
+    changeLine(yellowStart + 6, yellowStart + 8, removeLight);
+  }
+  // valve 4
+  if(getLightAction(4) == 1) {
+    changeLight(redStart + 4, addLight);
+    changeLine(greenStart + 2, greenStart, addLight);
+  } else if (getLightAction(4) == -1) {
+    changeLight(redStart + 4, removeLight);
+    changeLine(greenStart + 2, greenStart, removeLight);
+  }
+  // valve 1
+  if(getLightAction(1) == 1) {
+    changeLight(redStart + 1, addLight);
+    changeLine(whiteStart + 8, whiteStart +2, removeLight);
+    changeLine(greenStart + 3, greenStart + 15, removeLight);
+  } else if (getLightAction(1) == -1) {
+    changeLight(redStart + 1, removeLight);
+  }
+  // valve 2
+  if(getLightAction(2) == 1) {
+    changeLight(redStart + 2, addLight);
+    changeLine(whiteStart + 10, whiteStart + 9, removeLight);
+    changeLine(yellowStart + 5, yellowStart, removeLight);
+  } else if (getLightAction(2) == -1) {
+    changeLight(redStart + 2, removeLight);
   }
 }
 
+void setup(){
+  attachInterrupt(interruptNumber, updateValveStatuses, FALLING);
+  pinMode(latchPin, OUTPUT);
+  pinMode(clockPin, OUTPUT);
+  pinMode(dataPin, OUTPUT);
+  Serial.begin(9600);
+  changeLine(whiteStart, whiteStart + 1, addLight);
+
+}
+
 void loop(){
-/*  fillLine(33,36);
+  displayLoop();
+}
+
+/* For when test stand communication doesn't work */
+
+void displayLoop(){
+  play();
   delay(2000);
-  fillLine(36, 37);
+
+  valveStatuses[0] = true;
+  Serial.println("open valve 0");
+  play();
+  oldValveStatuses[0] = true;
   delay(2000);
-  clearLine(33, 39);
-  delay(2000);*/
+
+  valveStatuses[3] = true;
+  Serial.println("Open valve 3");
+  play();
+  oldValveStatuses[3] = true;
+  delay(2000);
+
+  valveStatuses[4] = true;
+  Serial.println("Open valve 4");
+  play();
+  oldValveStatuses[4] = true;
+  delay(2000);
+
+  valveStatuses[3] = false;
+  Serial.println("close valve 3");
+  play();
+  oldValveStatuses[3] = false;
+  delay(2000);
+
+  valveStatuses[4] = false;
+  Serial.println("close valve 4");
+  play();
+  delay(2000);
+  oldValveStatuses[4] = false;
+
+  valveStatuses[0] = false;
+  Serial.println("close valve 0");
+  play();
+  delay(2000);
+  oldValveStatuses[0] = false;
   
-  changeLine(0, 10, addLight);
-  delay(1000);
-  changeLine(0, 10, removeLight, 300);
-  delay(1000);
+  valveStatuses[1] = true;
+  Serial.println("open valve 1");
+  play();
+  delay(2000);
+  oldValveStatuses[1] = true;
+
+  valveStatuses[2] = true;
+  Serial.println("open valve 2");
+  play();
+  delay(2000);
+  oldValveStatuses[2] = true;
+  
+  valveStatuses[1] = false;
+  valveStatuses[2] = false;
+  Serial.println("close release valves");
+  play();
+  delay(2000);
+  oldValveStatuses[1] = false;
+  oldValveStatuses[2] = false;
 }
 
 void test_loop(){
