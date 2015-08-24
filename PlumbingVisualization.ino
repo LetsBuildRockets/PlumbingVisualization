@@ -20,6 +20,9 @@ const int redStart = 20;
 const int greenStart = 25;
 
 void updateValveStatuses(){
+  for(int i = 0; i < 5; i++) {
+    oldValveStatuses[i] = valveStatuses[i];
+  }
   for(int eger = 0; eger < 5; eger++){
     valveStatuses[eger] = digitalRead(valvePins[eger]);
   } 
@@ -58,53 +61,57 @@ void changeLine(int startLight, int endLight, void (*action)(int), int delayTime
     else counter--;
   }
 }
-int getLightAction(int valveNumber){
-  if(oldValveStatuses[valveNumber] == valveStatuses[valveNumber]) return 0;
-  else if(valveStatuses[valveNumber] == true) return 1; //turned on
+int getLightAction(int valveNumber, int (*valves)){
+  if(oldValveStatuses[valveNumber] == valves[valveNumber]) return 0;
+  else if(valves[valveNumber] == true) return 1; //turned on
   else return -1; //turned off
 }
 void play(){
+  int valves[5] = {0};
+  for(int i = 0; i < 5; i++) {
+    valves[i] = valveStatuses[i];
+  }  
   // valve 0
-  if(getLightAction(0) == 1) {
+  if(getLightAction(0, valves) == 1) {
     changeLight(redStart, addLight);
     changeLine(whiteStart + 2, whiteStart + 10, addLight);
     delay(200);
     changeLine(yellowStart, yellowStart + 5, addLight);
     changeLine(greenStart + 15, greenStart + 3, addLight);
-  } else if(getLightAction(0) == -1) {
+  } else if(getLightAction(0, valves) == -1) {
     changeLight(redStart, removeLight);
   }
 
   // valve 3
-  if(getLightAction(3) == 1) {
+  if(getLightAction(3, valves) == 1) {
     changeLight(redStart + 3, addLight);
     changeLine(yellowStart + 6, yellowStart + 8, addLight);
-  } else if (getLightAction(3) == -1) {
+  } else if (getLightAction(3, valves) == -1) {
     changeLight(redStart + 3, removeLight);
     changeLine(yellowStart + 6, yellowStart + 8, removeLight);
   }
   // valve 4
-  if(getLightAction(4) == 1) {
+  if(getLightAction(4, valves) == 1) {
     changeLight(redStart + 4, addLight);
     changeLine(greenStart + 2, greenStart, addLight);
-  } else if (getLightAction(4) == -1) {
+  } else if (getLightAction(4, valves) == -1) {
     changeLight(redStart + 4, removeLight);
     changeLine(greenStart + 2, greenStart, removeLight);
   }
   // valve 1
-  if(getLightAction(1) == 1) {
+  if(getLightAction(1, valves) == 1) {
     changeLight(redStart + 1, addLight);
     changeLine(whiteStart + 8, whiteStart +2, removeLight);
     changeLine(greenStart + 3, greenStart + 15, removeLight);
-  } else if (getLightAction(1) == -1) {
+  } else if (getLightAction(1, valves) == -1) {
     changeLight(redStart + 1, removeLight);
   }
   // valve 2
-  if(getLightAction(2) == 1) {
+  if(getLightAction(2, valves) == 1) {
     changeLight(redStart + 2, addLight);
     changeLine(whiteStart + 10, whiteStart + 9, removeLight);
     changeLine(yellowStart + 5, yellowStart, removeLight);
-  } else if (getLightAction(2) == -1) {
+  } else if (getLightAction(2, valves) == -1) {
     changeLight(redStart + 2, removeLight);
   }
 }
@@ -120,7 +127,8 @@ void setup(){
 }
 
 void loop(){
-  displayLoop();
+//  displayLoop();
+  play();
 }
 
 /* For when test stand communication doesn't work */
