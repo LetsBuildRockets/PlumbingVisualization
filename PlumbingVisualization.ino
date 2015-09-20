@@ -2,6 +2,7 @@
 
 typedef const int pin;
 
+pin pushButton = 8;//pin
 pin dataPin = 11;
 pin clockPin = 13;
 pin latchPin = 9;
@@ -121,75 +122,81 @@ void setup(){
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
+  pinMode(pushButton, INPUT_PULLUP);
   Serial.begin(9600);
   changeLine(whiteStart, whiteStart + 1, addLight);
 
 }
 
 void loop(){
-//  displayLoop();
-  play();
+  displayLoop();
+//  play();
 }
 
-/* For when test stand communication doesn't work */
 
+/* For when test stand communication doesn't work */
+int stepDelayMs = 5000;
 void displayLoop(){
+
+  
   play();
-  delay(2000);
+  delay(stepDelayMs);
+  
+  while(digitalRead(pushButton)); //wait for button press
 
   valveStatuses[0] = true;
   Serial.println("open valve 0");
   play();
   oldValveStatuses[0] = true;
-  delay(2000);
+  delay(stepDelayMs);
 
   valveStatuses[3] = true;
   Serial.println("Open valve 3");
   play();
   oldValveStatuses[3] = true;
-  delay(2000);
+  delay(stepDelayMs);
 
   valveStatuses[4] = true;
   Serial.println("Open valve 4");
   play();
   oldValveStatuses[4] = true;
-  delay(2000);
+  delay(stepDelayMs);
 
   valveStatuses[3] = false;
   Serial.println("close valve 3");
   play();
   oldValveStatuses[3] = false;
-  delay(2000);
+  delay(stepDelayMs);
 
   valveStatuses[4] = false;
   Serial.println("close valve 4");
   play();
-  delay(2000);
+  delay(stepDelayMs);
   oldValveStatuses[4] = false;
 
   valveStatuses[0] = false;
   Serial.println("close valve 0");
   play();
-  delay(2000);
+  delay(stepDelayMs);
   oldValveStatuses[0] = false;
   
   valveStatuses[1] = true;
   Serial.println("open valve 1");
   play();
-  delay(2000);
+  delay(stepDelayMs);
   oldValveStatuses[1] = true;
 
   valveStatuses[2] = true;
   Serial.println("open valve 2");
   play();
-  delay(2000);
+  delay(stepDelayMs);
   oldValveStatuses[2] = true;
   
   valveStatuses[1] = false;
   valveStatuses[2] = false;
   Serial.println("close release valves");
   play();
-  delay(2000);
+  delay(stepDelayMs);
   oldValveStatuses[1] = false;
   oldValveStatuses[2] = false;
 }
