@@ -3,6 +3,7 @@
 typedef const int pin;
 
 pin pushButton = 8;//pin
+pin valveInputPin = 7;
 pin dataPin = 11;
 pin clockPin = 13;
 pin latchPin = 9;
@@ -123,6 +124,7 @@ void setup(){
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
   pinMode(pushButton, INPUT_PULLUP);
+  pinMode(valveInputPin, INPUT);
   Serial.begin(9600);
   changeLine(whiteStart, whiteStart + 1, addLight);
 
@@ -142,7 +144,7 @@ void displayLoop(){
   play();
   delay(stepDelayMs);
   
-  while(digitalRead(pushButton)); //wait for button press
+  while(digitalRead(pushButton) && !digitalRead(valveInputPin) ); //wait for button press
 
   valveStatuses[0] = true;
   Serial.println("open valve 0");
