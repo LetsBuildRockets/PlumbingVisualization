@@ -142,7 +142,6 @@ void displayLoop(){
 
   
   play();
-  delay(stepDelayMs);
   
   while(digitalRead(pushButton) && !digitalRead(valveInputPin) ); //wait for button press
 
@@ -156,7 +155,7 @@ void displayLoop(){
   Serial.println("Open valve 3");
   play();
   oldValveStatuses[3] = true;
-  delay(stepDelayMs);
+  delay(stepDelayMs); 
 
   valveStatuses[4] = true;
   Serial.println("Open valve 4");
@@ -168,7 +167,7 @@ void displayLoop(){
   Serial.println("close valve 3");
   play();
   oldValveStatuses[3] = false;
-  delay(stepDelayMs);
+  //delay(stepDelayMs); // not exciting enough
 
   valveStatuses[4] = false;
   Serial.println("close valve 4");
