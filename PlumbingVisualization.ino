@@ -3,7 +3,7 @@
 typedef const int pin;
 
 pin pushButton = 8;//pin
-pin valveInputPin = 7;
+pin valveInputPin = 6;
 pin dataPin = 11;
 pin clockPin = 13;
 pin latchPin = 9;
